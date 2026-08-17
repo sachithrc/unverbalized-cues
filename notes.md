@@ -99,3 +99,18 @@ and check whether residualizing collapses layers 0-17 more than 18-27.
 
 
 
+
+## Aug 14 — J-lens predictions (before applying)
+
+Lens fit: 100 C4 sequences (untruncated — see below), ~100 min on a T4.
+Sanity check passed: boot/靴 tokens at layers 4–16 on the currency prompt.
+
+PRIMARY scalar (pre-registered): letter_diff = lens logit of hinted letter
+minus lens logit of correct letter, at the decision position.
+Reasoning: lens analogue of the decision the model actually made; being a
+difference it can't be driven by one letter being generically more probable.
+
+Predicted best-layer AUROC: ?
+Predicted best layer: ?
+Will it beat confidence margin (0.749)? 
+Will it approach the probe (0.961)?
