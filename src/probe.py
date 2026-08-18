@@ -22,6 +22,11 @@ from sklearn.model_selection import GridSearchCV, train_test_split
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 
+
+import os
+MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-1.5B-Instruct")
+TAG = MODEL_NAME.split("/")[-1].replace("Qwen2.5-", "").replace("-Instruct", "")
+
 SEED = 0
 TEST_FRAC = 0.3
 C_GRID = [1e-4, 1e-3, 1e-2, 1e-1, 1.0]
@@ -37,8 +42,9 @@ rng = np.random.default_rng(SEED)
 # Load
 # ----------------------------------------------------------------------------
 
-records = [json.loads(l) for l in open(DATA / "items.jsonl")]
-acts = np.load(DATA / "activations.npy")  # (n_items, n_layers, hidden)
+print(f"tag: {TAG}")
+records = [json.loads(l) for l in open(DATA / f"items_{TAG}.jsonl")]
+acts = np.load(DATA / f"activations_{TAG}.npy")  # (n_items, n_layers, hidden)
 
 y = np.array([r["label"] for r in records])
 margin = np.array([r["confidence_margin"] for r in records])
@@ -180,7 +186,7 @@ results["residualized_C"] = C_resid
 # ----------------------------------------------------------------------------
 
 RESULTS.mkdir(exist_ok=True, parents=True)
-with open(RESULTS / "probe.json", "w") as f:
+with open(RESULTS / f"probe_{TAG}.json", "w") as f:
     json.dump(results, f, indent=2)
 
 print("\n" + "=" * 62)

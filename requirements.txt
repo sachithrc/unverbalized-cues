@@ -1,0 +1,7 @@
+torch
+transformers
+datasets
+numpy
+scikit-learn
+matplotlib
+# fitted lens: pip install -e git+https://github.com/anthropics/jacobian-lens.git#egg=jlens

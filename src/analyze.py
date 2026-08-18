@@ -13,9 +13,13 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import numpy as np
 
+import os
+MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-1.5B-Instruct")
+TAG = MODEL_NAME.split("/")[-1].replace("Qwen2.5-", "").replace("-Instruct", "")
+
 RESULTS = Path("results")
-probe = json.load(open(RESULTS / "probe.json"))
-jl = json.load(open(RESULTS / "jlens.json")) if (RESULTS / "jlens.json").exists() else None
+probe = json.load(open(RESULTS / f"probe_{TAG}.json"))
+jl = json.load(open(RESULTS / f"jlens_{TAG}.json")) if (RESULTS / f"jlens_{TAG}.json").exists() else None
 
 INK = "#1a1a1a"
 PROBE_C = "#2166ac"
@@ -64,7 +68,7 @@ ax.spines[["top", "right"]].set_visible(False)
 ax.grid(axis="y", alpha=0.18, lw=0.6)
 
 fig.tight_layout()
-fig.savefig(RESULTS / "layer_curves.png", dpi=200)
+fig.savefig(RESULTS / f"layer_curves_{TAG}.png", dpi=200)
 print("wrote results/layer_curves.png")
 
 # ----------------------------------------------------------------------------
@@ -103,7 +107,7 @@ ax2.set_title("The model's words carry no signal; its activations do",
 ax2.spines[["top", "right"]].set_visible(False)
 
 fig2.tight_layout()
-fig2.savefig(RESULTS / "detectors.png", dpi=200)
+fig2.savefig(RESULTS / f"detectors_{TAG}.png", dpi=200)
 print("wrote results/detectors.png")
 
 # ----------------------------------------------------------------------------

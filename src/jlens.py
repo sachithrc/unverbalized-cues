@@ -29,7 +29,9 @@ import torch
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 
-sys.path.insert(0, "/content/unverbalized-cues/jacobian-lens")
+# jlens is pip-installed (pip install -e jacobian-lens/). If the import
+# fails, uncomment and point at the clone:
+# sys.path.insert(0, "/workspace/unverbalized-cues/jacobian-lens")
 import jlens  # noqa: E402
 import transformers  # noqa: E402
 
@@ -37,14 +39,16 @@ import transformers  # noqa: E402
 # Config -- must match generate.py and probe.py exactly
 # ----------------------------------------------------------------------------
 
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
-DTYPE = torch.float16
+import os
+MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-1.5B-Instruct")
+TAG = MODEL_NAME.split("/")[-1].replace("Qwen2.5-", "").replace("-Instruct", "")
+DTYPE = torch.bfloat16
 SEED = 0
 TEST_FRAC = 0.3
 
 DATA = Path("data")
 RESULTS = Path("results")
-LENS_PATH = DATA / "jacobian_lens.pt"
+LENS_PATH = DATA / f"jacobian_lens_{TAG}.pt"
 
 LETTERS = ["A", "B", "C", "D"]
 ANSWER_PREFIX = "The best answer is ("
@@ -57,6 +61,7 @@ HINT_WORDS = [" professor", " expert", " opinion", " Stanford", " authority"]
 # Model + lens
 # ----------------------------------------------------------------------------
 
+print(f"model: {MODEL_NAME}   tag: {TAG}")
 print("loading model ...")
 hf = transformers.AutoModelForCausalLM.from_pretrained(
     MODEL_NAME, dtype=DTYPE
@@ -121,7 +126,7 @@ def build_prompt(question, choices, hint_letter=None):
     return text + ANSWER_PREFIX
 
 
-records = [json.loads(l) for l in open(DATA / "items.jsonl")]
+records = [json.loads(l) for l in open(DATA / f"items_{TAG}.jsonl")]
 n = len(records)
 print(f"{n} items")
 
@@ -193,17 +198,17 @@ for name, arr in scores.items():
     results[f"{name}_direction"] = "higher -> influenced" if raw > 0.5 else "lower -> influenced"
 
 RESULTS.mkdir(exist_ok=True, parents=True)
-with open(RESULTS / "jlens.json", "w") as f:
+with open(RESULTS / f"jlens_{TAG}.json", "w") as f:
     json.dump(results, f, indent=2)
-np.savez(DATA / "jlens_scores.npz", **scores)
+np.savez(DATA / f"jlens_scores_{TAG}.npz", **scores)
 
 # ----------------------------------------------------------------------------
 # Report
 # ----------------------------------------------------------------------------
 
 probe = {}
-if (RESULTS / "probe.json").exists():
-    probe = json.load(open(RESULTS / "probe.json"))
+if (RESULTS / f"probe_{TAG}.json").exists():
+    probe = json.load(open(RESULTS / f"probe_{TAG}.json"))
 
 print("\n" + "=" * 68)
 print(f"{'readout':<32} {'best AUROC':>11} {'layer':>7}")

@@ -27,8 +27,10 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 # Config
 # ----------------------------------------------------------------------------
 
-MODEL_NAME = "Qwen/Qwen2.5-1.5B-Instruct"
-DTYPE = torch.float16  # T4 is Turing: no bf16 support
+import os
+MODEL_NAME = os.environ.get("MODEL_NAME", "Qwen/Qwen2.5-1.5B-Instruct")
+TAG = MODEL_NAME.split("/")[-1].replace("Qwen2.5-", "").replace("-Instruct", "")
+DTYPE = torch.bfloat16  # T4 is Turing: no bf16 support / A100 bfloat
 SEED = 0
 
 SUBJECTS = [
@@ -71,6 +73,7 @@ torch.manual_seed(SEED)
 # Model
 # ----------------------------------------------------------------------------
 
+print(f"model: {MODEL_NAME}   tag: {TAG}")
 print(f"loading {MODEL_NAME} ...")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
 model = AutoModelForCausalLM.from_pretrained(
@@ -280,12 +283,12 @@ for i, item in enumerate(items):
 
 OUT_DIR.mkdir(exist_ok=True, parents=True)
 
-with open(OUT_DIR / "items.jsonl", "w") as f:
+with open(OUT_DIR / f"items_{TAG}.jsonl", "w") as f:
     for r in records:
         f.write(json.dumps(r) + "\n")
 
 acts = np.stack(activations)  # (n_items, N_LAYERS, HIDDEN)
-np.save(OUT_DIR / "activations.npy", acts)
+np.save(OUT_DIR / f"activations_{TAG}.npy", acts)
 
 # ----------------------------------------------------------------------------
 # Sanity checks -- if any of these look wrong, fix before moving on
