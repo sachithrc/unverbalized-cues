@@ -196,6 +196,3 @@ python src/compare.py      # both models  -> figures
 Outputs are tagged by model, so both runs coexist. Fitting the lens is the
 expensive step and only needs doing once per model; it requires
 [anthropics/jacobian-lens](https://github.com/anthropics/jacobian-lens).
-
-`notes.md` is the lab notebook — predictions written before each run, and what
-actually happened.
